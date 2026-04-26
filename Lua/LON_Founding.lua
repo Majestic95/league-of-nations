@@ -1,12 +1,256 @@
 -- LON_Founding.lua
 -- League of Nations — founding gate (Printing Press + meet-all-civs).
--- Persisted state keys: (TBD — added in M1)
+-- Persisted state keys (via GameConfiguration, MP-safe):
+--   "LON_HasFounded"   (bool)  — true once the League has been founded
+--   "LON_HostPlayerID" (int)   — player ID of the founding civ (the first Host)
+--   "LON_FoundingTurn" (int)   — game turn the League was founded on
 -- Dependencies: LON_Core, LON_Config
 
 LON_Founding = {}
 
--- TODO(M1): implement founding gate per design doc §5.1.
--- The League founds when any civ has researched LON_Config.FOUNDING_TECH AND
--- has met all other civs in the game. That civ becomes the first Host.
--- Fallback: first civ to enter LON_Config.FOUNDING_FALLBACK_ERA founds the
--- League regardless, to prevent soft-locks on isolated maps.
+-- Internal state cache. Hydrated from GameConfiguration on LoadScreenClose so
+-- save/load and MP join both pick up the right values.
+local _hasFounded   = false
+local _hostPlayerID = -1
+local _foundingTurn = -1
+
+-- Public API ----------------------------------------------------------------
+
+-- Returns true if the League has been founded.
+function LON_Founding.HasFounded()
+    return _hasFounded
+end
+
+-- Returns the host player ID, or -1 if not founded.
+function LON_Founding.GetHostPlayerID()
+    return _hostPlayerID
+end
+
+-- Returns the turn the League was founded on, or -1 if not founded.
+function LON_Founding.GetFoundingTurn()
+    return _foundingTurn
+end
+
+-- Persistence helpers -------------------------------------------------------
+
+local function _loadState()
+    local ok = pcall(function()
+        _hasFounded   = GameConfiguration.GetValue("LON_HasFounded") or false
+        _hostPlayerID = GameConfiguration.GetValue("LON_HostPlayerID") or -1
+        _foundingTurn = GameConfiguration.GetValue("LON_FoundingTurn") or -1
+    end)
+    if not ok then
+        LON_Log("WARN", "LON_Founding: failed to load state, using defaults")
+    end
+end
+
+local function _saveState()
+    local ok = pcall(function()
+        GameConfiguration.SetValue("LON_HasFounded",   _hasFounded)
+        GameConfiguration.SetValue("LON_HostPlayerID", _hostPlayerID)
+        GameConfiguration.SetValue("LON_FoundingTurn", _foundingTurn)
+    end)
+    if not ok then
+        LON_Log("ERROR", "LON_Founding: failed to persist state")
+    end
+end
+
+-- Lookup helpers ------------------------------------------------------------
+
+-- Returns the row Index for our founding tech, or nil if not found.
+local function _foundingTechIndex()
+    local row = GameInfo.Technologies[LON_Config.FOUNDING_TECH]
+    return row and row.Index or nil
+end
+
+-- Returns the row Index for our fallback era, or nil if not found.
+local function _fallbackEraIndex()
+    local row = GameInfo.Eras[LON_Config.FOUNDING_FALLBACK_ERA]
+    return row and row.Index or nil
+end
+
+-- Iterates alive major civs and yields each player ID.
+local function _aliveMajorIDs()
+    local ids = {}
+    local maxMajors = (GameDefines and GameDefines.MAX_MAJOR_CIVS) or 64
+    for i = 0, maxMajors - 1 do
+        local p = Players[i]
+        if p ~= nil and p:IsAlive() then
+            table.insert(ids, i)
+        end
+    end
+    return ids
+end
+
+-- Predicates ----------------------------------------------------------------
+
+-- True if playerID has met every other living major civ.
+local function _hasMetAllLivingMajors(playerID)
+    local ok, result = pcall(function()
+        local p = Players[playerID]
+        if p == nil or not p:IsAlive() then return false end
+        local diplo = p:GetDiplomacy()
+        if diplo == nil then return false end
+        for _, otherID in ipairs(_aliveMajorIDs()) do
+            if otherID ~= playerID and not diplo:HasMet(otherID) then
+                return false
+            end
+        end
+        return true
+    end)
+    if not ok then
+        LON_Log("WARN", "_hasMetAllLivingMajors error: " .. tostring(result))
+        return false
+    end
+    return result
+end
+
+-- True if playerID has researched the founding tech.
+local function _hasFoundingTech(playerID)
+    local techIdx = _foundingTechIndex()
+    if techIdx == nil then return false end
+    local ok, result = pcall(function()
+        local p = Players[playerID]
+        if p == nil or not p:IsAlive() then return false end
+        local techs = p:GetTechs()
+        return techs ~= nil and techs:HasTech(techIdx)
+    end)
+    return ok and result or false
+end
+
+-- True if playerID is in or past the fallback era.
+local function _atOrPastFallbackEra(playerID)
+    local eraIdx = _fallbackEraIndex()
+    if eraIdx == nil then return false end
+    local ok, result = pcall(function()
+        local p = Players[playerID]
+        if p == nil or not p:IsAlive() then return false end
+        local eras = p:GetEras()
+        return eras ~= nil and eras:GetEra() >= eraIdx
+    end)
+    return ok and result or false
+end
+
+-- Founding ------------------------------------------------------------------
+
+-- Best-effort lookup of a civ's display name. Falls back to "Player N".
+local function _civDisplayName(playerID)
+    local name
+    local ok = pcall(function()
+        local cfg = PlayerConfigurations[playerID]
+        if cfg ~= nil then
+            local key = cfg:GetCivilizationDescription()
+            if key ~= nil then name = Locale.Lookup(key) end
+        end
+    end)
+    if not ok or name == nil or name == "" then
+        return "Player " .. tostring(playerID)
+    end
+    return name
+end
+
+-- Sends the placeholder "League founded" notification to one player.
+-- Wrapped in pcall so an unexpected NotificationTypes shape doesn't crash.
+local function _notifyFounding(targetPlayerID, hostName)
+    pcall(function()
+        local data = {}
+        data[ParameterTypes.MESSAGE] = Locale.Lookup("LOC_LON_NOTIF_FOUNDED_MESSAGE", hostName)
+        data[ParameterTypes.SUMMARY] = Locale.Lookup("LOC_LON_NOTIF_FOUNDED_SUMMARY", hostName)
+        NotificationManager.SendNotification(targetPlayerID, NotificationTypes.USER_DEFINED_1, data)
+    end)
+end
+
+-- Founds the League with playerID as host. Idempotent.
+local function _foundLeague(playerID, reason)
+    if _hasFounded then return end
+    _hasFounded   = true
+    _hostPlayerID = playerID
+    _foundingTurn = (Game.GetCurrentGameTurn and Game.GetCurrentGameTurn()) or -1
+    _saveState()
+
+    local hostName = _civDisplayName(playerID)
+    LON_Log("INFO", string.format(
+        "League of Nations founded by %s (player %d) on turn %d via %s",
+        hostName, playerID, _foundingTurn, reason
+    ))
+
+    for _, otherID in ipairs(_aliveMajorIDs()) do
+        _notifyFounding(otherID, hostName)
+    end
+end
+
+-- Condition checks ----------------------------------------------------------
+
+-- Scans all alive majors for the primary founding condition. First qualifier
+-- in player ID order founds.
+local function _checkPrimary()
+    if _hasFounded then return end
+    for _, pid in ipairs(_aliveMajorIDs()) do
+        if _hasFoundingTech(pid) and _hasMetAllLivingMajors(pid) then
+            _foundLeague(pid, "primary")
+            return
+        end
+    end
+end
+
+-- Checks the fallback condition for a single player (just entered fallback era).
+local function _checkFallback(playerID)
+    if _hasFounded then return end
+    if _atOrPastFallbackEra(playerID) then
+        _foundLeague(playerID, "fallback")
+    end
+end
+
+-- Event hooks ---------------------------------------------------------------
+
+local function _onResearchCompleted(playerID, techIndex)
+    if _hasFounded then return end
+    local foundingIdx = _foundingTechIndex()
+    if foundingIdx ~= nil and techIndex == foundingIdx then
+        _checkPrimary()
+    end
+end
+
+local function _onDiplomacyMeet(playerID1, playerID2)
+    -- Either party may now satisfy the meet-all-civs condition; cheap to scan.
+    if _hasFounded then return end
+    _checkPrimary()
+end
+
+local function _onPlayerEraChanged(playerID)
+    if _hasFounded then return end
+    _checkFallback(playerID)
+end
+
+local function _onLoadScreenClose()
+    _loadState()
+    LON_Log("DEBUG", string.format(
+        "LON_Founding state loaded: hasFounded=%s host=%d turn=%d",
+        tostring(_hasFounded), _hostPlayerID, _foundingTurn
+    ))
+end
+
+-- Init ----------------------------------------------------------------------
+
+local function _safeRegister(event, handler, name)
+    if event == nil then
+        LON_Log("WARN", "LON_Founding: event '" .. name .. "' not available")
+        return
+    end
+    local ok, err = pcall(function() event.Add(handler) end)
+    if not ok then
+        LON_Log("ERROR", "LON_Founding: failed to register '" .. name .. "': " .. tostring(err))
+    end
+end
+
+local function _initialize()
+    _safeRegister(Events.LoadScreenClose,    _onLoadScreenClose,    "LoadScreenClose")
+    _safeRegister(Events.ResearchCompleted,  _onResearchCompleted,  "ResearchCompleted")
+    _safeRegister(Events.DiplomacyMeet,      _onDiplomacyMeet,      "DiplomacyMeet")
+    _safeRegister(Events.PlayerEraChanged,   _onPlayerEraChanged,   "PlayerEraChanged")
+    LON_Log("INFO", "LON_Founding initialized (gate: "
+        .. LON_Config.FOUNDING_TECH .. " + meet-all-civs; fallback: "
+        .. LON_Config.FOUNDING_FALLBACK_ERA .. ")")
+end
+
+_initialize()

@@ -40,7 +40,9 @@ Violations block PR merge. No exceptions without a documented reason in the PR d
 ### Multiplayer is first-class
 This mod must work in MP. Therefore:
 - **Never use `math.random()`.** Use `Game.GetRandNum(...)` (synced RNG). Bare `math.random` desyncs clients.
-- **No client-only mutable state.** All custom state persists via `GameConfiguration` or save-hooked tables. Document every persisted key in `LON_Core.lua`'s registry.
+- **No client-only mutable state.** All custom state persists. Two acceptable paths:
+  - **Primitives (bool, int, string)** — `GameConfiguration.SetValue/GetValue`. MP-safe out of the box. Document keys in the consuming module's file header.
+  - **Tables / structured state** — `LON_Core.RegisterPersistence(key, onSave, onLoad)`. Document keys in the consuming module's file header AND register the hooks.
 - **UI panels are views.** They render host-authoritative state and emit intent events. They do not mutate game state directly.
 - **Human-targeted bribery uses notification → accept/decline.** The recipient must explicitly accept on their own client.
 - **Every milestone is tested in 2-player MP** before being declared done. Save → exit → reload → reconnect must round-trip.
@@ -234,7 +236,7 @@ Flag in PR description if any of these become blockers.
 Before opening a PR, confirm:
 
 - [ ] No `math.random()` calls; all RNG via `Game.GetRandNum`
-- [ ] No new persisted state without `LON_Core.RegisterPersistence` + file-header docs
+- [ ] All new persisted state uses `GameConfiguration` (primitives) or `LON_Core.RegisterPersistence` (tables), with keys documented in the file header
 - [ ] No hardcoded player-visible strings; all use `LOC_LON_*` keys
 - [ ] No magic numbers in logic files; all tunables in `LON_Config.lua`
 - [ ] No bare `print()` calls; all use `LON_Log`

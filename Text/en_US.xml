@@ -16,5 +16,13 @@
     <Row Tag="LOC_LON_MOD_SPECIALTHANKS" Language="en_US">
       <Text>Inspired by Civilization V: Brave New World.</Text>
     </Row>
+
+    <!-- Founding (M1) -->
+    <Row Tag="LOC_LON_NOTIF_FOUNDED_SUMMARY" Language="en_US">
+      <Text>The League of Nations has been founded by {1_HostName}.</Text>
+    </Row>
+    <Row Tag="LOC_LON_NOTIF_FOUNDED_MESSAGE" Language="en_US">
+      <Text>{1_HostName} has founded the League of Nations and serves as its first Host. The world's first international congress will convene in the coming sessions.</Text>
+    </Row>
   </LocalizedText>
 </GameData>
