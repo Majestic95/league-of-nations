@@ -1,11 +1,23 @@
 -- Config.sql
 -- League of Nations — global parameters and configuration.
 
--- M1: Suppress engine's Medieval-era auto-start of the World Congress.
--- Verified mechanism (2026-04-26): WORLD_CONGRESS_INITIAL_ERA takes an integer
--- era index (Ancient=0, Classical=1, Medieval=2, ...). GS sets it to 2. We
--- raise it to 99 so the engine never auto-founds; LON_Founding.lua drives
--- founding via Printing Press + meet-all-civs, with an Industrial fallback.
+-- Era gate for the engine's first World Congress session.
+-- Era indices: Ancient=0, Classical=1, Medieval=2, Renaissance=3, Industrial=4,
+--   Modern=5, Atomic=6, Information=7, Future=8.
+-- GS default is 2 (Medieval). We push it to 3 (Renaissance) to align the
+-- engine's first session with our founding tech (LON_Config.FOUNDING_TECH =
+-- TECH_PRINTING_PRESS, a Renaissance tech).
+--
+-- Trade-off: a few engine sessions may fire before LON founds (Printing Press
+-- + meet-all-civs). During that window our GameEvents.CanUseResolutions hook
+-- (LON_Proposals) leaves the resolution pool unmodified, so those sessions
+-- run as vanilla GS. Once LON founds, the hook returns only the proposers'
+-- picks and the LON flow takes over.
+--
+-- Setting this value to 99 fully suppresses the engine — DO NOT do this; it
+-- also kills GameEvents.CanUseResolutions, which is the hook we use to
+-- inject proposer picks into the engine's session.
+--
 -- Reference: design doc §5.1; verified against
 -- DLC/Expansion2/Data/Expansion2_GlobalParameters.xml line 296.
-UPDATE GlobalParameters SET Value = '99' WHERE Name = 'WORLD_CONGRESS_INITIAL_ERA';
+UPDATE GlobalParameters SET Value = '3' WHERE Name = 'WORLD_CONGRESS_INITIAL_ERA';
