@@ -31,6 +31,28 @@ function LON_Founding.GetFoundingTurn()
     return _foundingTurn
 end
 
+-- Host-changed pub/sub ------------------------------------------------------
+-- Other modules subscribe to host changes here instead of LON_Founding having
+-- to know about its consumers (LON_Delegates wants to refresh the host bonus,
+-- M3+ LON_Proposals wants to reset proposer order, etc.).
+
+local _hostChangedHandlers = {}
+
+-- Registers a handler called as fn(newHostPlayerID) whenever the host changes.
+-- Handlers are called inside pcall so a buggy handler can't break others.
+function LON_Founding.RegisterHostChangedHandler(fn)
+    table.insert(_hostChangedHandlers, fn)
+end
+
+local function _fireHostChanged(newHostID)
+    for _, fn in ipairs(_hostChangedHandlers) do
+        local ok, err = pcall(fn, newHostID)
+        if not ok then
+            LON_Log("WARN", "Host-changed handler errored: " .. tostring(err))
+        end
+    end
+end
+
 -- Persistence helpers -------------------------------------------------------
 
 local function _loadState()
@@ -177,6 +199,8 @@ local function _foundLeague(playerID, reason)
     for _, otherID in ipairs(_aliveMajorIDs()) do
         _notifyFounding(otherID, hostName)
     end
+
+    _fireHostChanged(playerID)
 end
 
 -- Condition checks ----------------------------------------------------------
@@ -228,6 +252,11 @@ local function _onLoadScreenClose()
         "LON_Founding state loaded: hasFounded=%s host=%d turn=%d",
         tostring(_hasFounded), _hostPlayerID, _foundingTurn
     ))
+    -- Notify subscribers if a host was already set in the loaded save so they
+    -- can refresh their derived state.
+    if _hasFounded and _hostPlayerID >= 0 then
+        _fireHostChanged(_hostPlayerID)
+    end
 end
 
 -- Init ----------------------------------------------------------------------
