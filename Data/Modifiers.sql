@@ -1,0 +1,6 @@
+-- Modifiers.sql
+-- League of Nations — modifier definitions for permanent resolution effects.
+--
+-- TODO(M4): define modifiers used by LON_Permanence to keep passed resolutions
+-- active past the engine's 30-turn auto-expiry.
+-- Reference: design doc §5.5; CLAUDE.md "Permanent until repealed".

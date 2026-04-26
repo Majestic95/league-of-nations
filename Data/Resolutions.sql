@@ -1,0 +1,6 @@
+-- Resolutions.sql
+-- League of Nations — resolution data tweaks.
+--
+-- TODO(M3): tweaks to era-eligibility of existing GS resolutions, if any.
+-- v1 reuses the existing GS resolution pool — we are NOT adding new resolutions.
+-- Reference: design doc §5.3.

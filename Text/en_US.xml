@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GameData>
+  <LocalizedText>
+    <Row Tag="LOC_LON_MOD_TITLE" Language="en_US">
+      <Text>League of Nations</Text>
+    </Row>
+    <Row Tag="LOC_LON_MOD_TEASER" Language="en_US">
+      <Text>A Civ 5 Brave New World-style World Congress for Civ 6 Gathering Storm.</Text>
+    </Row>
+    <Row Tag="LOC_LON_MOD_DESCRIPTION" Language="en_US">
+      <Text>Reworks the World Congress to give players real agency: pick what gets proposed, broker votes directly, and make outcomes stick until repealed. Requires Gathering Storm.</Text>
+    </Row>
+    <Row Tag="LOC_LON_MOD_AUTHORS" Language="en_US">
+      <Text>Austin Noyes</Text>
+    </Row>
+    <Row Tag="LOC_LON_MOD_SPECIALTHANKS" Language="en_US">
+      <Text>Inspired by Civilization V: Brave New World.</Text>
+    </Row>
+  </LocalizedText>
+</GameData>
