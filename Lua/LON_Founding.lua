@@ -55,25 +55,29 @@ end
 
 -- Persistence helpers -------------------------------------------------------
 
+-- GameConfiguration.SetValue only accepts primitives (string/number/nil) per
+-- empirical Civ 6 behavior — no booleans. We round-trip _hasFounded as 0/1.
+
 local function _loadState()
-    local ok = pcall(function()
-        _hasFounded   = GameConfiguration.GetValue("LON_HasFounded") or false
+    local ok, err = pcall(function()
+        local foundedInt = GameConfiguration.GetValue("LON_HasFounded") or 0
+        _hasFounded   = (foundedInt == 1)
         _hostPlayerID = GameConfiguration.GetValue("LON_HostPlayerID") or -1
         _foundingTurn = GameConfiguration.GetValue("LON_FoundingTurn") or -1
     end)
     if not ok then
-        LON_Log("WARN", "LON_Founding: failed to load state, using defaults")
+        LON_Log("WARN", "LON_Founding: failed to load state: " .. tostring(err))
     end
 end
 
 local function _saveState()
-    local ok = pcall(function()
-        GameConfiguration.SetValue("LON_HasFounded",   _hasFounded)
+    local ok, err = pcall(function()
+        GameConfiguration.SetValue("LON_HasFounded",   _hasFounded and 1 or 0)
         GameConfiguration.SetValue("LON_HostPlayerID", _hostPlayerID)
         GameConfiguration.SetValue("LON_FoundingTurn", _foundingTurn)
     end)
     if not ok then
-        LON_Log("ERROR", "LON_Founding: failed to persist state")
+        LON_Log("ERROR", "LON_Founding: failed to persist state: " .. tostring(err))
     end
 end
 
