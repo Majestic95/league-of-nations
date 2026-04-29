@@ -9,7 +9,9 @@
 LON_Config = {}
 
 -- Founding gate ---------------------------------------------------------------
-LON_Config.FOUNDING_TECH         = "TECH_PRINTING_PRESS"
+-- Civ 6 internal name is TECH_PRINTING (not TECH_PRINTING_PRESS); verified
+-- against Base/Assets/Gameplay/Data/Buildings.xml (Forbidden City PrereqTech).
+LON_Config.FOUNDING_TECH         = "TECH_PRINTING"
 LON_Config.FOUNDING_FALLBACK_ERA = "ERA_INDUSTRIAL"
 
 -- Delegates -------------------------------------------------------------------
