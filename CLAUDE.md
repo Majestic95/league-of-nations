@@ -41,7 +41,7 @@ Violations block PR merge. No exceptions without a documented reason in the PR d
 This mod must work in MP. Therefore:
 - **Never use `math.random()`.** Use `Game.GetRandNum(...)` (synced RNG). Bare `math.random` desyncs clients.
 - **No client-only mutable state.** All custom state persists. Two acceptable paths:
-  - **Primitives (bool, int, string)** — `GameConfiguration.SetValue/GetValue`. MP-safe out of the box. Document keys in the consuming module's file header.
+  - **Primitives (`string` / `number` / `nil` only)** — `GameConfiguration.SetValue/GetValue`. MP-safe out of the box. Document keys in the consuming module's file header. **Booleans are rejected** — round-trip via `0`/`1` (e.g., `value and 1 or 0` on save, `(v == 1)` on load).
   - **Tables / structured state** — `LON_Core.RegisterPersistence(key, onSave, onLoad)`. Document keys in the consuming module's file header AND register the hooks.
 - **UI panels are views.** They render host-authoritative state and emit intent events. They do not mutate game state directly.
 - **Human-targeted bribery uses notification → accept/decline.** The recipient must explicitly accept on their own client.
