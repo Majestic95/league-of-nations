@@ -10,12 +10,12 @@
     <CompatibleVersions>2.0,2.1,2.2</CompatibleVersions>
   </Properties>
   <Dependencies>
-    <Mod id="4873eb62-8ccc-4574-b784-dda455e74e68" title="Expansion: Rise and Fall" />
-    <Mod id="1B28771A-C749-434B-9053-D1380C553DE9" title="Expansion: Gathering Storm" />
+    <Mod id="1B28771A-C749-434B-9053-D1380C553DE9" title="Expansion: Rise and Fall" />
+    <Mod id="4873eb62-8ccc-4574-b784-dda455e74e68" title="Expansion: Gathering Storm" />
   </Dependencies>
   <ActionCriteria>
     <Criteria id="GS_Loaded">
-      <ModInUse>1B28771A-C749-434B-9053-D1380C553DE9</ModInUse>
+      <ModInUse>4873eb62-8ccc-4574-b784-dda455e74e68</ModInUse>
     </Criteria>
   </ActionCriteria>
   <InGameActions>
