@@ -203,6 +203,45 @@ local function _foundLeague(playerID, reason)
     _fireHostChanged(playerID)
 end
 
+-- Test-only API -------------------------------------------------------------
+-- These functions exist to support LON_TestHarness. They mutate state in ways
+-- the regular event flow wouldn't. Don't call them from production code paths.
+
+-- Bypass the gate; force-found with playerID as host. Idempotent.
+function LON_Founding.ForceFoundForTesting(playerID)
+    if _hasFounded then
+        LON_Log("WARN", "ForceFoundForTesting: already founded; ignoring")
+        return
+    end
+    _foundLeague(playerID, "test_force")
+end
+
+-- Force a host change without re-running the founding gate. Fires the
+-- host-changed pub/sub so consumers (LON_Delegates) refresh their state.
+function LON_Founding.SetHostForTesting(newHostID)
+    if not _hasFounded then
+        LON_Log("WARN", "SetHostForTesting: not founded yet; use ForceFoundForTesting first")
+        return
+    end
+    _hostPlayerID = newHostID
+    _saveState()
+    LON_Log("INFO", "Host changed to player " .. tostring(newHostID) .. " (test)")
+    _fireHostChanged(newHostID)
+end
+
+-- Reset founding state to pre-founded. Allows re-testing the gate without
+-- starting a new game. Recomputes delegates so the cached host bonus drops.
+function LON_Founding.ResetForTesting()
+    _hasFounded   = false
+    _hostPlayerID = -1
+    _foundingTurn = -1
+    _saveState()
+    LON_Log("INFO", "LON_Founding reset (test)")
+    if LON_Delegates ~= nil and LON_Delegates.RecomputeAll ~= nil then
+        LON_Delegates.RecomputeAll()
+    end
+end
+
 -- Condition checks ----------------------------------------------------------
 
 -- Scans all alive majors for the primary founding condition. First qualifier

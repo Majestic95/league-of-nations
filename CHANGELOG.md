@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (dev)
+- `Lua/LON_TestHarness.lua` — FireTuner-callable global helpers: `lon_test_grant_pp`, `lon_test_force_found`, `lon_test_reset_founding`, `lon_test_change_host`, `lon_test_recompute_delegates`, `lon_test_dump`, `lon_test_help`. Cuts a per-cycle playtest from minutes to seconds.
+- Test-only API on `LON_Founding`: `ForceFoundForTesting`, `SetHostForTesting`, `ResetForTesting`. Production code paths don't use these — they exist for the harness.
+
 ### Changed
 - **M1 refactor:** `WORLD_CONGRESS_INITIAL_ERA` lowered from `99` (full suppression) to `3` (Renaissance) so `GameEvents.CanUseResolutions` can fire — that's the hook M3 will use to constrain the resolution pool to proposers' picks. Trade-off: a few engine sessions may run as vanilla GS before LON founds (between Renaissance and Printing Press research); once LON founds, our hook takes over.
 

@@ -37,6 +37,7 @@
       <File>Lua/LON_Repeal.lua</File>
       <File>Lua/LON_Permanence.lua</File>
       <File>Lua/LON_AI.lua</File>
+      <File>Lua/LON_TestHarness.lua</File>
     </ImportFiles>
     <AddGameplayScripts id="LON_Scripts" criteria="GS_Loaded">
       <File>Lua/LON_Core.lua</File>
@@ -48,6 +49,7 @@
       <File>Lua/LON_Repeal.lua</File>
       <File>Lua/LON_Permanence.lua</File>
       <File>Lua/LON_AI.lua</File>
+      <File>Lua/LON_TestHarness.lua</File>
     </AddGameplayScripts>
   </InGameActions>
   <Files>
@@ -63,6 +65,7 @@
     <File>Lua/LON_Repeal.lua</File>
     <File>Lua/LON_Permanence.lua</File>
     <File>Lua/LON_AI.lua</File>
+    <File>Lua/LON_TestHarness.lua</File>
     <File>Text/en_US.xml</File>
   </Files>
 </Mod>
