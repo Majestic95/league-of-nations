@@ -166,10 +166,78 @@ function lon_test_help()
     print("=================================")
 end
 
+-- Auto-actions --------------------------------------------------------------
+-- Run scripted test actions at a configured turn. Lets the user playtest
+-- without FireTuner: edit LON_Config.AUTO_*_AT_TURN, restart Civ 6, observe
+-- Lua.log. Each action fires at most once per game.
+
+local _autoActionsFired = {}
+
+local function _maybeRunAutoActionsForTurn(turn)
+    if not LON_Config.DEV_MODE then return end
+    local local_ = (Game.GetLocalPlayer and Game.GetLocalPlayer()) or -1
+    if local_ < 0 then return end
+
+    if LON_Config.AUTO_FORCE_FOUND_AT_TURN ~= nil
+        and turn >= LON_Config.AUTO_FORCE_FOUND_AT_TURN
+        and not _autoActionsFired.force_found then
+        _autoActionsFired.force_found = true
+        print(string.format("[LON_Test][AUTO] turn %d: lon_test_force_found(%d)", turn, local_))
+        lon_test_force_found(local_)
+    end
+
+    if LON_Config.AUTO_GRANT_PP_AT_TURN ~= nil
+        and turn >= LON_Config.AUTO_GRANT_PP_AT_TURN
+        and not _autoActionsFired.grant_pp then
+        _autoActionsFired.grant_pp = true
+        print(string.format("[LON_Test][AUTO] turn %d: lon_test_grant_pp(%d)", turn, local_))
+        lon_test_grant_pp(local_)
+    end
+
+    if LON_Config.AUTO_DUMP_AT_TURN ~= nil
+        and turn >= LON_Config.AUTO_DUMP_AT_TURN
+        and not _autoActionsFired.dump then
+        _autoActionsFired.dump = true
+        print(string.format("[LON_Test][AUTO] turn %d: lon_test_dump()", turn))
+        lon_test_dump()
+    end
+end
+
+local function _onLocalPlayerTurnBegin()
+    local turn = (Game.GetCurrentGameTurn and Game.GetCurrentGameTurn()) or -1
+    if turn < 0 then return end
+    _maybeRunAutoActionsForTurn(turn)
+end
+
 -- Init ----------------------------------------------------------------------
 
 local function _initialize()
-    LON_Log("INFO", "LON_TestHarness loaded — type lon_test_help() in FireTuner")
+    if not LON_Config.DEV_MODE then
+        return  -- silent in release builds
+    end
+
+    -- Banner so the user can confirm the harness is loaded.
+    LON_Log("INFO", "LON_TestHarness loaded (DEV_MODE on)")
+    LON_Log("INFO", "  Available: lon_test_help, _grant_pp, _force_found, _reset_founding,")
+    LON_Log("INFO", "             _change_host, _recompute_delegates, _dump")
+
+    -- Report any configured auto-actions so the user knows what's queued.
+    if LON_Config.AUTO_FORCE_FOUND_AT_TURN then
+        LON_Log("INFO", "  AUTO: force-found at turn " .. tostring(LON_Config.AUTO_FORCE_FOUND_AT_TURN))
+    end
+    if LON_Config.AUTO_GRANT_PP_AT_TURN then
+        LON_Log("INFO", "  AUTO: grant Printing Press at turn " .. tostring(LON_Config.AUTO_GRANT_PP_AT_TURN))
+    end
+    if LON_Config.AUTO_DUMP_AT_TURN then
+        LON_Log("INFO", "  AUTO: dump state at turn " .. tostring(LON_Config.AUTO_DUMP_AT_TURN))
+    end
+
+    if Events ~= nil and Events.LocalPlayerTurnBegin ~= nil then
+        local ok, err = pcall(function() Events.LocalPlayerTurnBegin.Add(_onLocalPlayerTurnBegin) end)
+        if not ok then
+            LON_Log("WARN", "LON_TestHarness: failed to register LocalPlayerTurnBegin: " .. tostring(err))
+        end
+    end
 end
 
 _initialize()

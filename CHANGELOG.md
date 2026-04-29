@@ -7,7 +7,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added (dev)
-- `Lua/LON_TestHarness.lua` — FireTuner-callable global helpers: `lon_test_grant_pp`, `lon_test_force_found`, `lon_test_reset_founding`, `lon_test_change_host`, `lon_test_recompute_delegates`, `lon_test_dump`, `lon_test_help`. Cuts a per-cycle playtest from minutes to seconds.
+- `Lua/LON_TestHarness.lua` — global helpers: `lon_test_grant_pp`, `lon_test_force_found`, `lon_test_reset_founding`, `lon_test_change_host`, `lon_test_recompute_delegates`, `lon_test_dump`, `lon_test_help`. Plus auto-action support: configure `LON_Config.AUTO_FORCE_FOUND_AT_TURN` / `AUTO_GRANT_PP_AT_TURN` / `AUTO_DUMP_AT_TURN` to fire actions at the configured turn — works without FireTuner.
+- `LON_Config.DEV_MODE` flag (default `true`) gates the harness banner and auto-action wiring. Flip to `false` for Workshop release.
 - Test-only API on `LON_Founding`: `ForceFoundForTesting`, `SetHostForTesting`, `ResetForTesting`. Production code paths don't use these — they exist for the harness.
 
 ### Changed

@@ -32,3 +32,16 @@ LON_Config.SPECIAL_SESSION_FAVOR_COST = 30
 -- Bribery ---------------------------------------------------------------------
 -- AI accepts a bribe when:  offerValue * relationshipMod  >  ownPreference * RESISTANCE
 LON_Config.AI_BRIBERY_RESISTANCE = 1.5
+
+-- Development / playtest --------------------------------------------------
+-- Set DEV_MODE = false before any Workshop release. Currently controls
+-- whether LON_TestHarness logs its load banner and runs auto-actions.
+LON_Config.DEV_MODE = true
+
+-- Auto-actions run by LON_TestHarness on Events.LocalPlayerTurnBegin when
+-- DEV_MODE is true. Set to a turn number (>= 1) to fire that action once.
+-- Set to nil to disable. The local player ID is used as the target where
+-- relevant.
+LON_Config.AUTO_FORCE_FOUND_AT_TURN = nil   -- e.g., 3 -> bypass gate, force-found at turn 3
+LON_Config.AUTO_GRANT_PP_AT_TURN    = nil   -- e.g., 3 -> grant Printing Press at turn 3 (natural flow)
+LON_Config.AUTO_DUMP_AT_TURN        = nil   -- e.g., 5 -> print full state dump at turn 5
