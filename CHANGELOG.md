@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- **Critical: cross-module globals.** Each `<AddGameplayScripts>` file ran in its own isolated Lua chunk, so `LON_Config`, `LON_Founding`, `LON_Log`, etc. were `nil` in every module except the one that defined them. Mod was effectively non-functional after init — every module's `_initialize()` errored out when it referenced another module's globals. Fix: single entry point `Lua/LON_Bootstrap.lua` in `<AddGameplayScripts>`, every other module moved to `<ImportFiles>` only and pulled in via `include()` from the bootstrap. CLAUDE.md "Add a new Lua module" recipe updated to enforce the pattern.
+
 ### Added (dev)
 - `Lua/LON_TestHarness.lua` — global helpers: `lon_test_grant_pp`, `lon_test_force_found`, `lon_test_reset_founding`, `lon_test_change_host`, `lon_test_recompute_delegates`, `lon_test_dump`, `lon_test_help`. Plus auto-action support: configure `LON_Config.AUTO_FORCE_FOUND_AT_TURN` / `AUTO_GRANT_PP_AT_TURN` / `AUTO_DUMP_AT_TURN` to fire actions at the configured turn — works without FireTuner.
 - `LON_Config.DEV_MODE` flag (default `true`) gates the harness banner and auto-action wiring. Flip to `false` for Workshop release.

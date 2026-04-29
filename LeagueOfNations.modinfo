@@ -40,22 +40,14 @@
       <File>Lua/LON_TestHarness.lua</File>
     </ImportFiles>
     <AddGameplayScripts id="LON_Scripts" criteria="GS_Loaded">
-      <File>Lua/LON_Core.lua</File>
-      <File>Lua/LON_Config.lua</File>
-      <File>Lua/LON_Founding.lua</File>
-      <File>Lua/LON_Delegates.lua</File>
-      <File>Lua/LON_Proposals.lua</File>
-      <File>Lua/LON_Negotiation.lua</File>
-      <File>Lua/LON_Repeal.lua</File>
-      <File>Lua/LON_Permanence.lua</File>
-      <File>Lua/LON_AI.lua</File>
-      <File>Lua/LON_TestHarness.lua</File>
+      <File>Lua/LON_Bootstrap.lua</File>
     </AddGameplayScripts>
   </InGameActions>
   <Files>
     <File>Data/Config.sql</File>
     <File>Data/Resolutions.sql</File>
     <File>Data/Modifiers.sql</File>
+    <File>Lua/LON_Bootstrap.lua</File>
     <File>Lua/LON_Core.lua</File>
     <File>Lua/LON_Config.lua</File>
     <File>Lua/LON_Founding.lua</File>

@@ -43,5 +43,5 @@ LON_Config.DEV_MODE = true
 -- Set to nil to disable. The local player ID is used as the target where
 -- relevant.
 LON_Config.AUTO_FORCE_FOUND_AT_TURN = nil   -- e.g., 3 -> bypass gate, force-found at turn 3
-LON_Config.AUTO_GRANT_PP_AT_TURN    = nil   -- e.g., 3 -> grant Printing Press at turn 3 (natural flow)
-LON_Config.AUTO_DUMP_AT_TURN        = nil   -- e.g., 5 -> print full state dump at turn 5
+LON_Config.AUTO_GRANT_PP_AT_TURN    = 3     -- Recipe A: grant Printing Press at turn 3 (natural flow)
+LON_Config.AUTO_DUMP_AT_TURN        = 5     -- Recipe A: print full state dump at turn 5

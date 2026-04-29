@@ -200,9 +200,12 @@ LICENSE                          # MIT
 2. Declare global table: `LON_YourModule = {}`.
 3. Add to `LeagueOfNations.modinfo` in the same commit:
    - `<ImportFiles>`: `<File>Lua/LON_YourModule.lua</File>`
-   - `<AddGameplayScripts>` (only if it has runtime hooks): same line
-   - `<Files>`: same line
-4. If it persists state, call `LON_Core.RegisterPersistence(key, onSave, onLoad)` and document the keys in the file header.
+   - `<Files>`: `<File>Lua/LON_YourModule.lua</File>`
+   - **Do NOT add to `<AddGameplayScripts>`** — that block lists ONLY `Lua/LON_Bootstrap.lua`.
+4. Add `include "LON_YourModule"` to `Lua/LON_Bootstrap.lua` in dependency order (after any modules whose globals it references at load time).
+5. If it persists state, call `LON_Core.RegisterPersistence(key, onSave, onLoad)` and document the keys in the file header.
+
+**Why the bootstrap pattern:** Civ 6 runs each `<AddGameplayScripts>` file in its own isolated Lua chunk — globals don't propagate across files. The fix (matching the GS Pirates scenario) is one entry point that uses `include()` to pull every module into the same chunk. Adding a new file directly to `<AddGameplayScripts>` will load it in isolation and its references to other LON modules will be `nil`.
 
 ### Add a new player-visible string
 1. Add `<Row Tag="LOC_LON_YOUR_KEY" Language="en_US"><Text>Your text</Text></Row>` to `Text/en_US.xml`.
