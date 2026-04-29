@@ -298,6 +298,44 @@ local function _onLoadScreenClose()
     end
 end
 
+-- Per-turn recovery + diagnostic. Catches cases where Events.DiplomacyMeet or
+-- Events.ResearchCompleted fired but our predicate evaluated stale state, and
+-- logs WHY the gate fails when it does so we can diagnose without FireTuner.
+local function _onLocalPlayerTurnBegin()
+    if _hasFounded then return end
+
+    -- Recovery: re-run the primary gate from scratch.
+    _checkPrimary()
+    if _hasFounded then return end
+
+    -- Diagnostic: for any civ that has the founding tech, log who they haven't
+    -- met yet. Tells us whether the gate fails on the tech or on meet-all.
+    for _, pid in ipairs(_aliveMajorIDs()) do
+        if _hasFoundingTech(pid) then
+            local missing = {}
+            pcall(function()
+                local p = Players[pid]
+                local diplo = p and p:GetDiplomacy() or nil
+                if diplo == nil then return end
+                for _, otherID in ipairs(_aliveMajorIDs()) do
+                    if otherID ~= pid and not diplo:HasMet(otherID) then
+                        table.insert(missing, tostring(otherID))
+                    end
+                end
+            end)
+            if #missing == 0 then
+                -- Has tech AND met all alive majors — but gate failed. Bug.
+                LON_Log("WARN", string.format(
+                    "Gate diagnostic: player %d has tech AND met all alive majors but gate didn't fire", pid))
+            else
+                LON_Log("INFO", string.format(
+                    "Gate diagnostic: player %d has tech, hasn't met player(s): [%s]",
+                    pid, table.concat(missing, ",")))
+            end
+        end
+    end
+end
+
 -- Init ----------------------------------------------------------------------
 
 local function _safeRegister(event, handler, name)
@@ -312,10 +350,11 @@ local function _safeRegister(event, handler, name)
 end
 
 local function _initialize()
-    _safeRegister(Events.LoadScreenClose,    _onLoadScreenClose,    "LoadScreenClose")
-    _safeRegister(Events.ResearchCompleted,  _onResearchCompleted,  "ResearchCompleted")
-    _safeRegister(Events.DiplomacyMeet,      _onDiplomacyMeet,      "DiplomacyMeet")
-    _safeRegister(Events.PlayerEraChanged,   _onPlayerEraChanged,   "PlayerEraChanged")
+    _safeRegister(Events.LoadScreenClose,     _onLoadScreenClose,        "LoadScreenClose")
+    _safeRegister(Events.ResearchCompleted,   _onResearchCompleted,      "ResearchCompleted")
+    _safeRegister(Events.DiplomacyMeet,       _onDiplomacyMeet,          "DiplomacyMeet")
+    _safeRegister(Events.PlayerEraChanged,    _onPlayerEraChanged,       "PlayerEraChanged")
+    _safeRegister(Events.LocalPlayerTurnBegin, _onLocalPlayerTurnBegin,  "LocalPlayerTurnBegin")
     LON_Log("INFO", "LON_Founding initialized (gate: "
         .. LON_Config.FOUNDING_TECH .. " + meet-all-civs; fallback: "
         .. LON_Config.FOUNDING_FALLBACK_ERA .. ")")
