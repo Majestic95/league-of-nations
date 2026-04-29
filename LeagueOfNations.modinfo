@@ -43,6 +43,12 @@
     <AddGameplayScripts id="LON_Scripts" criteria="GS_Loaded">
       <File>Lua/LON_Bootstrap.lua</File>
     </AddGameplayScripts>
+    <AddUserInterfaces id="LON_UI" criteria="GS_Loaded">
+      <Properties>
+        <Context>InGame</Context>
+      </Properties>
+      <File>UI/LON_ProposalPanel.xml</File>
+    </AddUserInterfaces>
   </InGameActions>
   <Files>
     <File>Data/Config.sql</File>
@@ -60,6 +66,8 @@
     <File>Lua/LON_Permanence.lua</File>
     <File>Lua/LON_AI.lua</File>
     <File>Lua/LON_TestHarness.lua</File>
+    <File>UI/LON_ProposalPanel.xml</File>
+    <File>UI/LON_ProposalPanel.lua</File>
     <File>Text/en_US.xml</File>
   </Files>
 </Mod>

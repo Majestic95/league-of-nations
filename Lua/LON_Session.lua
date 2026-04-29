@@ -144,6 +144,24 @@ function LON_Session.BeginSession()
 
     _autoSubmitForAI(_hostID)
     _autoSubmitForAI(_secondID)
+
+    -- If the local player is a human proposer, fire the cross-context event
+    -- that opens LON_ProposalPanel. (UI-side filters by Game.GetLocalPlayer.)
+    local localID = (Game.GetLocalPlayer and Game.GetLocalPlayer()) or -1
+    if localID >= 0 and (localID == _hostID or localID == _secondID) then
+        local p = Players[localID]
+        if p ~= nil and p:IsHuman() then
+            local pool = LON_Proposals.GetEligiblePoolFor(localID)
+            if #pool > 0 and LuaEvents ~= nil and LuaEvents.LON_OpenProposalPanel ~= nil then
+                LuaEvents.LON_OpenProposalPanel(localID, pool)
+            end
+        end
+    end
+end
+
+-- Listen for the UI panel's confirm event and commit the pick.
+local function _onPanelSubmitted(playerID, resolutionHash, resolutionType)
+    LON_Session.SubmitProposal(playerID, resolutionHash)
 end
 
 -- Increments the session counter and clears picks. Called on
@@ -212,6 +230,10 @@ local function _initialize()
 
     if LON_Founding ~= nil and LON_Founding.RegisterHostChangedHandler ~= nil then
         LON_Founding.RegisterHostChangedHandler(_onHostChanged)
+    end
+
+    if LuaEvents ~= nil and LuaEvents.LON_ProposalPanel_Submitted ~= nil then
+        LuaEvents.LON_ProposalPanel_Submitted.Add(_onPanelSubmitted)
     end
 
     LON_Log("INFO", "LON_Session initialized")

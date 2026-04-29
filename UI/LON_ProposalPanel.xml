@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Context xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="..\..\..\..\..\CivTech\Libs\ForgeUI\ForgeUI_Assets\Controls.xsd">
+
+  <!-- Vignette dimmer -->
+  <Container Style="FullScreenVignetteConsumer" />
+
+  <!-- Main popup window -->
+  <Container ID="MainWindow" Anchor="C,C" Size="640,560" ConsumeAllMouse="1">
+
+    <!-- Background frame -->
+    <Grid Size="parent,parent" Texture="Controls_ContainerBlue" SliceCorner="3,3" SliceSize="9,9" SliceTextureSize="16,16"/>
+
+    <!-- Title -->
+    <Label ID="TitleLabel" Anchor="C,T" Offset="0,18" Style="EventPopupTitle"
+           String="LOC_LON_PROPOSAL_PANEL_TITLE" WrapWidth="parent-40" Align="Center"/>
+
+    <!-- Description -->
+    <Label ID="DescLabel" Anchor="C,T" Offset="0,80" Style="WhiteSemiBold14"
+           String="LOC_LON_PROPOSAL_PANEL_DESC" WrapWidth="parent-40" Align="Center"/>
+
+    <!-- Scrollable list of resolutions -->
+    <ScrollPanel Anchor="C,T" Offset="0,140" Size="parent-40,parent-220"
+                 Style="ScrollPanelWithRightBar">
+      <Stack ID="ResolutionStack" Anchor="C,T" StackGrowth="Down" Padding="8"/>
+    </ScrollPanel>
+
+    <!-- Cancel button -->
+    <GridButton ID="CancelButton" Style="MainButton" Size="220,41"
+                Anchor="C,B" Offset="0,18" String="LOC_LON_CANCEL"/>
+  </Container>
+
+  <!-- Resolution row template; instantiated once per eligible resolution -->
+  <Instance Name="ResolutionItem">
+    <Grid ID="Root" Size="560,90" Texture="Controls_ContainerBlue"
+          SliceCorner="3,3" SliceSize="9,9" SliceTextureSize="16,16">
+      <Stack Anchor="L,T" Offset="14,8" Padding="2" StackGrowth="Down">
+        <Label ID="NameLabel" Style="WhiteSemiBold16" WrapWidth="400"/>
+        <Label ID="Effect1Label" Style="WhiteSemiBold12" WrapWidth="400"/>
+        <Label ID="Effect2Label" Style="WhiteSemiBold12" WrapWidth="400"/>
+      </Stack>
+      <GridButton ID="SelectButton" Style="MainButton" Size="120,32"
+                  Anchor="R,C" Offset="-12,0" String="LOC_LON_PROPOSE_SELECT"/>
+    </Grid>
+  </Instance>
+
+</Context>

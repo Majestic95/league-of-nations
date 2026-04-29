@@ -6,6 +6,12 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (M3 — UI)
+- **M3.6** `UI/LON_ProposalPanel.{xml,lua}` — modal proposal panel for human proposers. Renders the era-eligible pool (one row per resolution: name, both A/B effect descriptions, "Propose" button). Click commits the pick and closes the panel; ESC or Cancel closes without picking.
+- Cross-context bridge: gameplay fires `LuaEvents.LON_OpenProposalPanel(playerID, pool)`; UI listens and renders. UI fires `LuaEvents.LON_ProposalPanel_Submitted(playerID, hash, type)`; gameplay listens and commits via `LON_Session.SubmitProposal`.
+- Modinfo: `<AddUserInterfaces>` registers the panel in the `InGame` UI context.
+- Loc keys: `LOC_LON_PROPOSAL_PANEL_TITLE`, `LOC_LON_PROPOSAL_PANEL_DESC`, `LOC_LON_PROPOSE_SELECT`, `LOC_LON_CANCEL`.
+
 ### Added (M3 — Lua-only half)
 - **M3.1** `LON_Proposals.GetCurrentProposers()` — Host + next-highest delegate, ties broken human-first then by PlayerID.
 - **M3.2** `LON_Proposals.GetEligiblePoolFor(playerID)` — `GameInfo.Resolutions` filtered by `EarliestEra`/`LatestEra` (via `ChronologyIndex`) and `InjectionOnly`.

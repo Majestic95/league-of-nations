@@ -24,5 +24,19 @@
     <Row Tag="LOC_LON_NOTIF_FOUNDED_MESSAGE" Language="en_US">
       <Text>{1_HostName} has founded the League of Nations and serves as its first Host. The world's first international congress will convene in the coming sessions.</Text>
     </Row>
+
+    <!-- Proposal Panel (M3) -->
+    <Row Tag="LOC_LON_PROPOSAL_PANEL_TITLE" Language="en_US">
+      <Text>Propose a Resolution</Text>
+    </Row>
+    <Row Tag="LOC_LON_PROPOSAL_PANEL_DESC" Language="en_US">
+      <Text>As one of this session's two proposers, choose a resolution to put before the League. The League's vote will determine which outcome is enacted.</Text>
+    </Row>
+    <Row Tag="LOC_LON_PROPOSE_SELECT" Language="en_US">
+      <Text>Propose</Text>
+    </Row>
+    <Row Tag="LOC_LON_CANCEL" Language="en_US">
+      <Text>Cancel</Text>
+    </Row>
   </LocalizedText>
 </GameData>
