@@ -33,6 +33,7 @@
       <File>Lua/LON_Founding.lua</File>
       <File>Lua/LON_Delegates.lua</File>
       <File>Lua/LON_Proposals.lua</File>
+      <File>Lua/LON_Session.lua</File>
       <File>Lua/LON_Negotiation.lua</File>
       <File>Lua/LON_Repeal.lua</File>
       <File>Lua/LON_Permanence.lua</File>
@@ -53,6 +54,7 @@
     <File>Lua/LON_Founding.lua</File>
     <File>Lua/LON_Delegates.lua</File>
     <File>Lua/LON_Proposals.lua</File>
+    <File>Lua/LON_Session.lua</File>
     <File>Lua/LON_Negotiation.lua</File>
     <File>Lua/LON_Repeal.lua</File>
     <File>Lua/LON_Permanence.lua</File>

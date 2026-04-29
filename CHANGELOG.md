@@ -6,6 +6,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (M3 — Lua-only half)
+- **M3.1** `LON_Proposals.GetCurrentProposers()` — Host + next-highest delegate, ties broken human-first then by PlayerID.
+- **M3.2** `LON_Proposals.GetEligiblePoolFor(playerID)` — `GameInfo.Resolutions` filtered by `EarliestEra`/`LatestEra` (via `ChronologyIndex`) and `InjectionOnly`.
+- **M3.3** `LON_Session.lua` — per-session state machine. Persists `LON_S_*` keys via `GameConfiguration` (sessionID, two proposer IDs, two resolution hashes). Hooks `Events.WorldCongressFinished` to bump session and rebuild proposers; subscribes to `LON_Founding`'s host-changed pub/sub for the initial session.
+- **M3.4** `LON_AI.PickProposal(playerID, pool)` — random from pool via `Game.GetRandNum` (synced RNG). M7 will tune via agendas.
+- **M3.5** Real `GameEvents.CanUseResolutions` handler. When founded AND both proposers have submitted picks, replaces the engine's resolution pool with exactly the two picks. Otherwise leaves it unmodified (vanilla GS fallback).
+- **M3.7** AI proposers auto-submit on `BeginSession`. Humans skip — they pick via M3.6 UI panel.
+- Test harness: `lon_test_pick_random(playerID)`, `lon_test_begin_session()`, `lon_debug_session()`. `lon_test_dump()` now includes session state. `lon_test_help()` updated.
+
 ### Fixed
 - **Critical: cross-module globals.** Each `<AddGameplayScripts>` file ran in its own isolated Lua chunk, so `LON_Config`, `LON_Founding`, `LON_Log`, etc. were `nil` in every module except the one that defined them. Mod was effectively non-functional after init — every module's `_initialize()` errored out when it referenced another module's globals. Fix: single entry point `Lua/LON_Bootstrap.lua` in `<AddGameplayScripts>`, every other module moved to `<ImportFiles>` only and pulled in via `include()` from the bootstrap. CLAUDE.md "Add a new Lua module" recipe updated to enforce the pattern.
 

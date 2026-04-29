@@ -17,7 +17,8 @@ include "LON_Core"          -- defines LON_Log + LON_Core; depends on nothing
 include "LON_Config"        -- defines LON_Config; depends on nothing
 include "LON_Founding"      -- uses LON_Log, LON_Config
 include "LON_Delegates"     -- uses LON_Log, LON_Config, LON_Founding
-include "LON_Proposals"     -- uses LON_Log, LON_Founding
+include "LON_Proposals"     -- uses LON_Log, LON_Founding, LON_Delegates
+include "LON_Session"       -- uses LON_Log, LON_Founding, LON_Proposals
 include "LON_Repeal"        -- placeholder
 include "LON_Permanence"    -- placeholder
 include "LON_Negotiation"   -- placeholder

@@ -108,6 +108,44 @@ function lon_test_recompute_delegates()
     end
 end
 
+-- M3: Sessions / proposals --------------------------------------------------
+
+-- Pick a random eligible resolution for playerID and submit it via LON_Session.
+-- Stand-in for the M3.6 UI panel — lets a human player submit without UI.
+function lon_test_pick_random(playerID)
+    playerID = _resolvePlayerID(playerID)
+    if _validatePlayer(playerID) == nil then return end
+    if LON_Proposals == nil or LON_AI == nil or LON_Session == nil then
+        print("[LON_Test] Required modules not loaded.")
+        return
+    end
+    local pool = LON_Proposals.GetEligiblePoolFor(playerID)
+    if #pool == 0 then
+        print(string.format("[LON_Test] Empty pool for player %d.", playerID))
+        return
+    end
+    local pick = LON_AI.PickProposal(playerID, pool)
+    if pick == nil then
+        print("[LON_Test] AI.PickProposal returned nil.")
+        return
+    end
+    local ok = LON_Session.SubmitProposal(playerID, pick.hash)
+    print(string.format("[LON_Test] player %d submitted %s (accepted=%s)",
+        playerID, pick.resolutionType, tostring(ok)))
+end
+
+-- Force-begin a new session: snapshot proposers, clear picks, auto-submit AI.
+-- Useful when force-founding mid-game and you want session state populated
+-- without waiting for WorldCongressFinished.
+function lon_test_begin_session()
+    if LON_Session == nil or LON_Session.BeginSession == nil then
+        print("[LON_Test] LON_Session not loaded.")
+        return
+    end
+    LON_Session.BeginSession()
+    print("[LON_Test] BeginSession called. Run lon_debug_session() to inspect.")
+end
+
 -- Inspection ----------------------------------------------------------------
 
 -- Print full LON state in one shot.
@@ -124,6 +162,9 @@ function lon_test_dump()
 
     print("--- Delegates ---")
     if lon_debug_delegates ~= nil then lon_debug_delegates() else print("(LON_Delegates not loaded)") end
+
+    print("--- Session ---")
+    if lon_debug_session ~= nil then lon_debug_session() else print("(LON_Session not loaded)") end
 
     print("--- CanUseResolutions hook ---")
     if lon_debug_canuse_fires ~= nil then lon_debug_canuse_fires() else print("(LON_Proposals not loaded)") end
@@ -157,6 +198,13 @@ function lon_test_help()
     print("M2 — Delegates")
     print("  lon_test_change_host(newHostID)    force host change; exercises pub/sub")
     print("  lon_test_recompute_delegates()     force a cache rebuild")
+    print("")
+    print("M3 — Proposals / Sessions")
+    print("  lon_debug_proposers()              current Host + second-place proposer with counts")
+    print("  lon_debug_pool(playerID)           era-eligible resolution pool for that civ")
+    print("  lon_debug_session()                current session state: proposers, picks, hashes")
+    print("  lon_test_begin_session()           force-snapshot proposers, auto-submit AI picks")
+    print("  lon_test_pick_random(playerID)     submit a random eligible pick (UI stand-in)")
     print("")
     print("Inspection")
     print("  lon_test_dump()                    full state snapshot in one shot")
